@@ -1,0 +1,237 @@
+import React, { useState, useEffect } from 'react';
+import { ThumbsUp, ThumbsDown, MessageSquare, TrendingUp, ExternalLink, Menu, Search } from 'lucide-react';
+
+const App = () => {
+  // 状態管理 (本来はDBから取得)
+  const [votes, setVotes] = useState({ like: 1250, dislike: 850 });
+  const [hasVoted, setHasVoted] = useState(false);
+  const [comments, setComments] = useState([
+    { id: 1, type: 'like', text: 'このシリーズの最新作、本当に感動しました！', date: '2時間前' },
+    { id: 2, type: 'dislike', text: '前作に比べると少し物足りない気がします...', date: '5時間前' },
+    { id: 3, type: 'like', text: 'デザインが洗練されていて使いやすいですね。', date: '1日前' },
+  ]);
+  const [newComment, setNewComment] = useState("");
+  const [commentType, setCommentType] = useState('like');
+
+  // 投票率の計算
+  const totalVotes = votes.like + votes.dislike;
+  const likePercent = Math.round((votes.like / totalVotes) * 100);
+  const dislikePercent = 100 - likePercent;
+
+  const handleVote = (type) => {
+    if (hasVoted) return;
+    setVotes(prev => ({ ...prev, [type]: prev[type] + 1 }));
+    setHasVoted(true);
+  };
+
+  const handlePostComment = (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    const comment = {
+      id: Date.now(),
+      type: commentType,
+      text: newComment,
+      date: 'たった今'
+    };
+    setComments([comment, ...comments]);
+    setNewComment("");
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+      {/* Header */}
+      <header className="bg-white border-b sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-600 text-white p-1.5 rounded-lg">
+              <TrendingUp size={24} />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">スキキライ・ボード</h1>
+          </div>
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+            <a href="#" className="hover:text-indigo-600">トレンド</a>
+            <a href="#" className="hover:text-indigo-600">カテゴリ</a>
+            <a href="#" className="hover:text-indigo-600">新規作成</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
+              <Search size={20} />
+            </button>
+            <button className="md:hidden p-2 text-gray-400 hover:bg-gray-100 rounded-full">
+              <Menu size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left/Main Column */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Topic Section */}
+          <section className="bg-white rounded-2xl shadow-sm border p-6 md:p-8 overflow-hidden">
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="w-32 h-32 md:w-48 md:h-48 bg-gray-200 rounded-2xl flex-shrink-0 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400&h=400&fit=crop" 
+                  alt="Topic" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">エンタメ・シリーズ</span>
+                <h2 className="text-3xl font-extrabold mb-2">話題の次世代デバイス A1</h2>
+                <p className="text-gray-500 mb-6">このトピックについて、あなたの「好き」「嫌い」を教えてください。投票後に現在の比率が表示されます。</p>
+              </div>
+            </div>
+
+            {/* Voting Buttons */}
+            <div className="mt-8 flex flex-col gap-4">
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => handleVote('like')}
+                  disabled={hasVoted}
+                  className={`flex-1 flex flex-col items-center justify-center py-6 rounded-2xl border-2 transition-all ${
+                    hasVoted ? 'bg-blue-50 border-blue-200 cursor-default' : 'border-blue-100 hover:border-blue-500 hover:bg-blue-50'
+                  }`}
+                >
+                  <ThumbsUp size={32} className={hasVoted ? 'text-blue-500' : 'text-blue-400'} />
+                  <span className="mt-2 font-bold text-blue-700">好き</span>
+                </button>
+                <button 
+                  onClick={() => handleVote('dislike')}
+                  disabled={hasVoted}
+                  className={`flex-1 flex flex-col items-center justify-center py-6 rounded-2xl border-2 transition-all ${
+                    hasVoted ? 'bg-red-50 border-red-200 cursor-default' : 'border-red-100 hover:border-red-500 hover:bg-red-50'
+                  }`}
+                >
+                  <ThumbsDown size={32} className={hasVoted ? 'text-red-500' : 'text-red-400'} />
+                  <span className="mt-2 font-bold text-red-700">嫌い</span>
+                </button>
+              </div>
+
+              {/* Progress Bar (Visible after voting) */}
+              <div className={`mt-4 space-y-2 transition-opacity duration-500 ${hasVoted ? 'opacity-100' : 'opacity-30'}`}>
+                <div className="flex justify-between text-sm font-bold">
+                  <span className="text-blue-600">好き {likePercent}%</span>
+                  <span className="text-red-600">嫌い {dislikePercent}%</span>
+                </div>
+                <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex">
+                  <div style={{ width: `${likePercent}%` }} className="h-full bg-blue-500 transition-all duration-1000"></div>
+                  <div style={{ width: `${dislikePercent}%` }} className="h-full bg-red-500 transition-all duration-1000"></div>
+                </div>
+                <p className="text-center text-xs text-gray-400">総投票数: {totalVotes.toLocaleString()} 票</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Comment Form */}
+          <section className="bg-white rounded-2xl shadow-sm border p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <MessageSquare size={20} className="text-gray-400" />
+              コメントを投稿する
+            </h3>
+            <form onSubmit={handlePostComment} className="space-y-4">
+              <div className="flex p-1 bg-gray-100 rounded-xl w-fit">
+                <button 
+                  type="button"
+                  onClick={() => setCommentType('like')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${commentType === 'like' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`}
+                >
+                  好き派として
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setCommentType('dislike')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${commentType === 'dislike' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500'}`}
+                >
+                  嫌い派として
+                </button>
+              </div>
+              <textarea 
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="誹謗中傷は禁止です。あなたの意見を聞かせてください。"
+                className="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+              ></textarea>
+              <button 
+                type="submit"
+                className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg"
+              >
+                投稿する
+              </button>
+            </form>
+          </section>
+
+          {/* Comments List */}
+          <section className="space-y-4">
+            {comments.map(comment => (
+              <div key={comment.id} className={`p-5 rounded-2xl border bg-white shadow-sm flex gap-4 ${comment.type === 'like' ? 'border-l-4 border-l-blue-500' : 'border-l-4 border-l-red-500'}`}>
+                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xs ${comment.type === 'like' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
+                  {comment.type === 'like' ? '好' : '嫌'}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-gray-400">匿名ユーザー · {comment.date}</span>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{comment.text}</p>
+                </div>
+              </div>
+            ))}
+          </section>
+        </div>
+
+        {/* Right Column (Sidebar / Ads) */}
+        <div className="space-y-6">
+          {/* Ad Banner 1 (Self-Promotion) */}
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+            <div className="relative z-10">
+              <h4 className="font-bold text-lg mb-2">自社サービスへ誘導</h4>
+              <p className="text-indigo-100 text-sm mb-6">最新のトレンド情報をいち早くお届けするニュースサイトをチェック！</p>
+              <a href="#" className="flex items-center justify-between bg-white text-indigo-600 font-bold py-3 px-4 rounded-xl hover:bg-indigo-50 transition-all">
+                公式サイトを見る
+                <ExternalLink size={18} />
+              </a>
+            </div>
+            {/* Decorative circles */}
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+            <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+          </div>
+
+          {/* Ranking Widget */}
+          <div className="bg-white rounded-2xl border shadow-sm p-6">
+            <h4 className="font-bold mb-4 flex items-center gap-2">
+              <TrendingUp size={18} className="text-indigo-500" />
+              急上昇ランキング
+            </h4>
+            <ul className="space-y-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <li key={i} className="flex items-center gap-3 group cursor-pointer">
+                  <span className="text-xl font-black text-gray-200 group-hover:text-indigo-200 w-6">0{i}</span>
+                  <div className="flex-1 border-b border-gray-50 pb-2">
+                    <p className="text-sm font-bold group-hover:text-indigo-600 transition-colors">トレンドトピック {i}</p>
+                    <span className="text-xs text-gray-400">2,450 票が進行中</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Footer Info */}
+          <div className="px-4 text-[10px] text-gray-400 leading-relaxed">
+            <p>&copy; 2024 スキキライ・ボード. 全てのコンテンツはユーザーの意見に基づいています。公序良俗に反する投稿は削除されます。</p>
+            <div className="flex gap-4 mt-2 underline">
+              <a href="#">利用規約</a>
+              <a href="#">プライバシーポリシー</a>
+              <a href="#">お問い合わせ</a>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  );
+};
+
+export default App;
