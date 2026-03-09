@@ -235,3 +235,66 @@ const App = () => {
 };
 
 export default App;
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>JS 二択投票</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .container { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        .option { border: 1px solid #ccc; padding: 20px; width: 150px; border-radius: 8px; }
+        button { padding: 10px 20px; cursor: pointer; font-size: 16px; }
+        .result { margin-top: 10px; font-weight: bold; }
+        .bar-container { width: 100%; background-color: #eee; height: 20px; margin-top: 10px; border-radius: 10px; overflow: hidden; }
+        .bar { height: 100%; background-color: #4CAF50; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+    <h2>お昼ご飯、どっちがいい？</h2>
+    
+    <div class="container">
+        <div class="option">
+            <h3>寿司 🍣</h3>
+            <button onclick="vote('a')">投票</button>
+            <div id="resultA" class="result">0票 (0%)</div>
+            <div class="bar-container"><div id="barA" class="bar"></div></div>
+        </div>
+        <div class="option">
+            <h3>ラーメン 🍜</h3>
+            <button onclick="vote('b')">投票</button>
+            <div id="resultB" class="result">0票 (0%)</div>
+            <div class="bar-container"><div id="barB" class="bar"></div></div>
+        </div>
+    </div>
+
+    <script>
+        // 投票数の初期値
+        let votes = { a: 0, b: 0 };
+
+        function vote(choice) {
+            // 投票数をカウントアップ
+            votes[choice]++;
+
+            // 合計を計算
+            let total = votes.a + votes.b;
+
+            // 割合を計算
+            let percentA = Math.round((votes.a / total) * 100);
+            let percentB = Math.round((votes.b / total) * 100);
+
+            // 結果表示を更新
+            document.getElementById('resultA').innerText = `${votes.a}票 (${percentA}%)`;
+            document.getElementById('resultB').innerText = `${votes.b}票 (${percentB}%)`;
+
+            // グラフ（バー）の長さを更新
+            document.getElementById('barA').style.width = percentA + '%';
+            document.getElementById('barB').style.width = percentB + '%';
+        }
+    </script>
+</body>
+</html>
+
